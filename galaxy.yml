@@ -1,0 +1,19 @@
+# Copyright (C) Ansible Project
+# SPDX-License-Identifier: GPL-3.0-or-later
+---
+namespace: gotmax23
+name: sourcehut
+version: 0.1.0  # noqa: galaxy[version-incorrect]
+readme: README.md
+authors:
+  - Maxwell G <maxwell@gtmx.me>
+description: Collection for interacting with the Sourcehut API
+license:
+  - GPL-3.0-or-later
+tags:
+  - sourcehut
+  - api
+  - application
+repository: https://github.com/gotmax23/ansible-collection-sourcehut
+homepage: https://github.com/gotmax23/ansible-collection-sourcehut
+issues: https://github.com/gotmax23/ansible-collection-sourcehut/issues

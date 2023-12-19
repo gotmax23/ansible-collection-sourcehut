@@ -1,0 +1,7 @@
+---
+# Copyright (c) Ansible Project
+# SPDX-License-Identifier: GPL-3.0-or-later
+version: 3
+dependencies:
+  python: meta/ee-requirements.txt
+  system: meta/ee-bindep.txt

@@ -1,0 +1,114 @@
+---
+# Copyright (C) Ansible Project
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: CI
+'on':
+  # Run CI against all pushes (direct commits, also merged PRs), Pull Requests
+  push:
+    branches:
+      - main
+      - stable-*
+  pull_request:
+  workflow_dispatch:
+  # Run CI weekly (at 06:00 UTC on Sundays)
+  # This ensures that even if there haven't been commits that we are still
+  # testing against latest version of ansible-test for each ansible-core
+  # version
+  schedule:
+    - cron: '0 6 * * 0'
+
+concurrency:
+  group: >-
+    ${{ github.workflow }}-${{
+      github.event.pull_request.number || github.sha
+    }}
+  cancel-in-progress: true
+
+jobs:
+
+  sanity:
+    name: Sanity (Ⓐ${{ matrix.ansible }})
+    strategy:
+      matrix:
+        ansible:
+          - stable-2.14
+          - stable-2.15
+          - stable-2.16
+          - devel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Perform sanity testing
+        uses: ansible-community/ansible-test-gh-action@release/v1
+        with:
+          ansible-core-version: ${{ matrix.ansible }}
+          testing-type: sanity
+          pull-request-change-detection: false
+
+  units:
+    runs-on: ubuntu-latest
+    name: Units (Ⓐ${{ matrix.ansible }})
+    strategy:
+      fail-fast: true
+      matrix:
+        ansible:
+          - stable-2.14
+          - stable-2.15
+          - stable-2.16
+          - devel
+
+    steps:
+      - name: >-
+          Perform unit testing against
+          Ansible version ${{ matrix.ansible }}
+        uses: ansible-community/ansible-test-gh-action@release/v1
+        with:
+          ansible-core-version: ${{ matrix.ansible }}
+          testing-type: units
+          pull-request-change-detection: false
+
+  integration:
+    runs-on: ubuntu-latest
+    name: I (Ⓐ${{ matrix.ansible }}+py${{ matrix.python }})
+    strategy:
+      fail-fast: false
+      matrix:
+        ansible:
+          - devel
+        python:
+          - '3.10'
+          - '3.11'
+          - '3.12'
+        include:
+          # ansible-core 2.14
+          - ansible: stable-2.14
+            python: '3.9'
+          - ansible: stable-2.14
+            python: '3.10'
+          - ansible: stable-2.14
+            python: '3.11'
+          # ansible-core 2.15
+          - ansible: stable-2.15
+            python: '3.9'
+          - ansible: stable-2.15
+            python: '3.10'
+          - ansible: stable-2.15
+            python: '3.11'
+          # ansible-core 2.16
+          - ansible: stable-2.16
+            python: '3.10'
+          - ansible: stable-2.16
+            python: '3.11'
+          - ansible: stable-2.16
+            python: '3.12'
+
+    steps:
+      - name: >-
+          Perform integration testing against
+          Ansible version ${{ matrix.ansible }}
+          under Python ${{ matrix.python }}
+        uses: ansible-community/ansible-test-gh-action@release/v1
+        with:
+          ansible-core-version: ${{ matrix.ansible }}
+          target-python-version: ${{ matrix.python }}
+          testing-type: integration
+          pull-request-change-detection: false
